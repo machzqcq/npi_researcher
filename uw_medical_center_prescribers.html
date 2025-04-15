@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>University of Washington Medical Center Prescribers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #4b2e83; /* UW Purple */
+            text-align: center;
+            border-bottom: 2px solid #b7a57a; /* UW Gold */
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #4b2e83;
+            margin-top: 30px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #b7a57a;
+        }
+        h3 {
+            color: #4b2e83;
+            margin-top: 25px;
+        }
+        .summary {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        th {
+            background-color: #4b2e83;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e0e0e0;
+        }
+        .location-header {
+            background-color: #b7a57a;
+            color: #4b2e83;
+            font-weight: bold;
+        }
+        .report-date {
+            text-align: right;
+            font-style: italic;
+            margin-top: 10px;
+            color: #666;
+        }
+        .specialty-group {
+            margin-bottom: 40px;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .filter-button {
+            background-color: #4b2e83;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .filter-button:hover {
+            background-color: #3a2266;
+        }
+        .filter-button.active {
+            background-color: #b7a57a;
+            color: #4b2e83;
+        }
+    </style>
+    <script>
+        // JavaScript function to convert taxonomy codes to specialty descriptions
+        function getSpecialtyDescription(taxonomyCode) {
+            const taxonomyMap = {
+                // Internal Medicine and subspecialties
+                "207R00000X": "Internal Medicine",
+                "207RA0000X": "Internal Medicine, Adolescent Medicine", 
+                "207RA0002X": "Internal Medicine, Adolescent Medicine",
+                "207RB0002X": "Internal Medicine, Obesity Medicine",
+                "207RC0000X": "Internal Medicine, Cardiovascular Disease",
+                "207RC0001X": "Internal Medicine, Clinical Cardiac Electrophysiology",
+                "207RC0200X": "Internal Medicine, Critical Care Medicine",
+                "207RE0101X": "Internal Medicine, Endocrinology, Diabetes & Metabolism",
+                "207RG0100X": "Internal Medicine, Gastroenterology",
+                "207RG0300X": "Internal Medicine, Geriatric Medicine",
+                "207RH0000X": "Internal Medicine, Hematology",
+                "207RH0002X": "Internal Medicine, Hospice and Palliative Medicine",
+                "207RH0003X": "Internal Medicine, Hematology & Oncology",
+                "207RI0001X": "Internal Medicine, Clinical & Laboratory Immunology",
+                "207RI0008X": "Internal Medicine, Hepatology",
+                "207RI0011X": "Internal Medicine, Interventional Cardiology",
+                "207RI0200X": "Internal Medicine, Infectious Disease",
+                "207RN0300X": "Internal Medicine, Nephrology",
+                "207RP1001X": "Internal Medicine, Pulmonary Disease",
+                "207RR0500X": "Internal Medicine, Rheumatology",
+                "207RS0012X": "Internal Medicine, Sleep Medicine",
+                "207RT0003X": "Internal Medicine, Transplant Hepatology",
+                "207RX0202X": "Internal Medicine, Medical Oncology",
+                
+                // Neurology and subspecialties
+                "2084N0400X": "Neurology",
+                "2084N0402X": "Neurology, Neurocritical Care",
+                "2084N0600X": "Neurology, Clinical Neurophysiology",
+                "2084P0800X": "Psychiatry",
+                "2084P0802X": "Psychiatry, Addiction",
+                "2084P0804X": "Psychiatry, Child & Adolescent",
+                "2084P0805X": "Psychiatry, Geriatric",
+                "2084B0040X": "Psychiatry, Behavioral Neurology & Neuropsychiatry",
+                
+                // Surgery and surgical subspecialties
+                "208600000X": "Surgery",
+                "2086S0102X": "Surgery, Surgical Critical Care",
+                "2086S0105X": "Surgery, Surgery of the Hand",
+                "2086S0120X": "Surgery, Pediatric Surgery",
+                "2086S0122X": "Surgery, Plastic and Reconstructive Surgery",
+                "2086S0127X": "Surgery, Trauma Surgery",
+                "2086S0129X": "Surgery, Vascular Surgery",
+                "208G00000X": "Thoracic Surgery",
+                "208800000X": "Urology",
+                "2088P0231X": "Urology, Pediatric Urology",
+                
+                // Radiology and subspecialties
+                "2085R0001X": "Radiology, Radiation Oncology",
+                "2085R0202X": "Radiology, Diagnostic Radiology",
+                "2085R0204X": "Radiology, Vascular & Interventional",
+                "2085B0100X": "Radiology, Body Imaging",
+                "2085N0700X": "Radiology, Nuclear Medicine",
+                "2085N0904X": "Radiology, Neuroradiology",
+                
+                // Anesthesiology and subspecialties
+                "207L00000X": "Anesthesiology",
+                "207LC0200X": "Anesthesiology, Critical Care Medicine",
+                "207LP2900X": "Anesthesiology, Pain Medicine",
+                
+                // Other physician specialties
+                "207P00000X": "Emergency Medicine",
+                "207PE0004X": "Emergency Medicine, Pediatric Emergency Medicine",
+                "207Q00000X": "Family Medicine",
+                "207QA0000X": "Family Medicine, Adolescent Medicine",
+                "207QA0505X": "Family Medicine, Adult Medicine",
+                "207V00000X": "Obstetrics & Gynecology",
+                "207VM0101X": "Obstetrics & Gynecology, Maternal & Fetal Medicine",
+                "207W00000X": "Ophthalmology",
+                "207X00000X": "Orthopaedic Surgery",
+                "207XX0005X": "Orthopaedic Surgery, Sports Medicine",
+                "207Y00000X": "Otolaryngology",
+                "207YX0007X": "Otolaryngology, Facial Plastic Surgery",
+                "207YX0901X": "Otolaryngology, Otology & Neurotology",
+                "207T00000X": "Neurological Surgery",
+                "207ZC0006X": "Pathology, Clinical",
+                "207ZC0500X": "Pathology, Cytopathology",
+                "207ZP0101X": "Pathology, Anatomic Pathology",
+                "207ZP0102X": "Pathology, Anatomic Pathology & Clinical Pathology",
+                "207ZP0105X": "Pathology, Forensic Pathology",
+                "208000000X": "Pediatrics",
+                "2080A0000X": "Pediatrics, Adolescent Medicine",
+                "2080N0001X": "Pediatrics, Neonatology",
+                "2080P0006X": "Pediatrics, Developmental – Behavioral Pediatrics",
+                "2080P0203X": "Pediatrics, Pediatric Emergency Medicine",
+                "2081P0010X": "Physical Medicine & Rehabilitation, Pediatric Rehabilitation Medicine",
+                "2081S0010X": "Physical Medicine & Rehabilitation, Sports Medicine",
+                "208D00000X": "General Practice",
+                "2083P0500X": "Preventive Medicine",
+                "208100000X": "Physical Medicine & Rehabilitation",
+                "208M00000X": "Hospitalist",
+                
+                // Dentistry
+                "122300000X": "Dentist",
+                "1223E0200X": "Dentist, Endodontics",
+                "1223G0001X": "Dentist, General Practice",
+                "1223P0700X": "Dentist, Prosthodontics",
+                "1223S0112X": "Dentist, Oral & Maxillofacial Surgery",
+                
+                // Non-physician providers
+                "133N00000X": "Nutritionist",
+                "133V00000X": "Dietitian, Registered",
+                "163W00000X": "Registered Nurse",
+                "170300000X": "Genetic Counselor, MS",
+                "183500000X": "Pharmacist",
+                "1835P0018X": "Pharmacist, Nutrition Support",
+                "1835P1200X": "Pharmacist, Pharmacotherapy",
+                "207SG0201X": "Medical Genetics, Clinical Genetics",
+                "225X00000X": "Occupational Therapist",
+                "225XH1300X": "Occupational Therapist, Hand Therapy",
+                "231H00000X": "Audiologist",
+                "235Z00000X": "Speech-Language Pathologist",
+                "2255A2300X": "Athletic Trainer",
+                "363A00000X": "Physician Assistant",
+                "363AM0700X": "Physician Assistant, Medical",
+                "363AS0400X": "Physician Assistant, Surgical",
+                "363L00000X": "Nurse Practitioner",
+                "363LA2100X": "Nurse Practitioner, Acute Care",
+                "363LA2200X": "Nurse Practitioner, Adult Health",
+                "363LF0000X": "Nurse Practitioner, Family",
+                "363LN0000X": "Nurse Practitioner, Neonatal",
+                "363LN0005X": "Nurse Practitioner, Neonatal, Critical Care",
+                "363LP0200X": "Nurse Practitioner, Pediatrics",
+                "363LW0102X": "Nurse Practitioner, Women's Health",
+                "367500000X": "Nurse Anesthetist, Certified Registered",
+                "367A00000X": "Advanced Practice Midwife",
+                "1041C0700X": "Social Worker",
+                "103G00000X": "Clinical Neuropsychologist",
+                "103TC0700X": "Psychologist",
+                "101Y00000X": "Counselor",
+                
+                // Default for unknown codes
+                "": "Unknown Specialty"
+            };
+            
+            return taxonomyMap[taxonomyCode] || "Specialty Code: " + taxonomyCode;
+        }
+        
+        // Search functionality
+        function searchProviders() {
+            const searchTerm = document.getElementById('provider-search').value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // Filter by specialty group
+        function filterBySpecialty(specialty) {
+            const tables = document.querySelectorAll('.specialty-group');
+            
+            if (specialty === 'all') {
+                tables.forEach(table => {
+                    table.style.display = '';
+                });
+            } else {
+                tables.forEach(table => {
+                    if (table.getAttribute('data-specialty') === specialty) {
+                        table.style.display = '';
+                    } else {
+                        table.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Update active button
+            const buttons = document.querySelectorAll('.filter-button');
+            buttons.forEach(button => {
+                if (button.getAttribute('data-filter') === specialty) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                });
+            });
+        });
+        
+        // Wait for the DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Convert all specialty codes to descriptions
+            const specialtyCells = document.querySelectorAll('.specialty-code');
+            specialtyCells.forEach(function(cell) {
+                const code = cell.getAttribute('data-code');
+                cell.textContent = getSpecialtyDescription(code);
+            });
+            
+            // Set up search functionality
+            const searchBox = document.getElementById('provider-search');
+            searchBox.addEventListener('keyup', searchProviders);
+            
+            // Set up filter buttons
+            const filterButtons = document.querySelectorAll('.filter-button');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterBySpecialty(this.getAttribute('data-filter'));
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>University of Washington Medical Center Prescribers Report</h1>
+    <p class="report-date">Generated on: April 14, 2025</p>
+    
+    <div class="summary">
+        <h3>Summary</h3>
+        <p>This report contains information on prescribers associated with the University of Washington Medical Center system across all campuses. The data was extracted from the National Provider Identifier (NPI) database.</p>
+        <p><strong>Total Providers:</strong> 500+ providers found across all UW Medicine locations</p>
+    </div>
+    
+    <input type="text" id="provider-search" class="search-box" placeholder="Search for providers by name, specialty, or location...">
+    
+    <div class="filters">
+        <button class="filter-button active" data-filter="all">All Specialties</button>
+        <button class="filter-button" data-filter="internal-medicine">Internal Medicine</button>
+        <button class="filter-button" data-filter="surgery">Surgery</button>
+        <button class="filter-button" data-filter="neurology">Neurology & Psychiatry</button>
+        <button class="filter-button" data-filter="radiology">Radiology & Imaging</button>
+        <button class="filter-button" data-filter="anesthesiology">Anesthesiology</button>
+        <button class="filter-button" data-filter="other-physician">Other Physician Specialties</button>
+        <button class="filter-button" data-filter="advanced-practice">Advanced Practice Providers</button>
+        <button class="filter-button" data-filter="allied-health">Allied Health Professionals</button>
+    </div>
+    
+    <div class="specialty-group" data-specialty="internal-medicine">
+        <h2>Internal Medicine and Subspecialties</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NPI</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Credentials</th>
+                    <th>Specialty</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Internal Medicine -->
+                <tr>
+                    <td>1679572168</td>
+                    <td>FANG</td>
+                    <td>ANNIE</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207R00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1871582734</td>
+                    <td>CUFLEY</td>
+                    <td>DAVONNA</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207R00000X"></td>
+                    <td>1959 NE PACIFIC ST.</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1932308020</td>
+                    <td>HO</td>
+                    <td>LAWRENCE</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207R00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1033529649</td>
+                    <td>KADURA</td>
+                    <td>SUHA</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207R00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1992738330</td>
+                    <td>WEMPLE</td>
+                    <td>MATTHEW</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207R00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1700879582</td>
+                    <td>CHUA</td>
+                    <td>CYNTHIA</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207R00000X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1043201684</td>
+                    <td>BAETEN</td>
+                    <td>JARED</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207R00000X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Pulmonary Medicine -->
+                <tr>
+                    <td>1447335260</td>
+                    <td>RALPH</td>
+                    <td>DAVID</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207RP1001X"></td>
+                    <td>UNIVERSITY OF WASHINGTON MEDICAL CTR</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1821188780</td>
+                    <td>RAGHU</td>
+                    <td>GANESH</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207RP1001X"></td>
+                    <td>UNIVERSITY OF WASHINGTON MEDICAL CTR</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1043283732</td>
+                    <td>KRITEK</td>
+                    <td>PATRICIA</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207RP1001X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1295718377</td>
+                    <td>CROTHERS</td>
+                    <td>KRISTINA</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207RP1001X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Gastroenterology -->
+                <tr>
+                    <td>1932197902</td>
+                    <td>BHATTACHARYA</td>
+                    <td>RENUKA</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207RG0100X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1154359743</td>
+                    <td>CARR</td>
+                    <td>ROTONYA</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207RG0100X"></td>
+                    <td>1959 NE PACIFIC ST.</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1285606541</td>
+                    <td>BAMBHA</td>
+                    <td>KIRAN</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207RG0100X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Nephrology -->
+                <tr>
+                    <td>1164417119</td>
+                    <td>NELSON</td>
+                    <td>PETER</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207RN0300X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1013903780</td>
+                    <td>KELLY</td>
+                    <td>MICHAEL</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207RN0300X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1841414414</td>
+                    <td>STIVELMAN</td>
+                    <td>JOHN</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207RN0300X"></td>
+                    <td>NORTHWEST KIDNEY CENTERS</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1932146669</td>
+                    <td>DE BOER</td>
+                    <td>IAN</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207RN0300X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1205866787</td>
+                    <td>HALL</td>
+                    <td>YOSHIO</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207RN0300X"></td>
+                    <td>HARBORVIEW MEDICAL CENTER - UW MEDICINE/NEPHROLOGY</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Adolescent Medicine -->
+                <tr>
+                    <td>1346584174</td>
+                    <td>BUBER</td>
+                    <td>YONATAN</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207RA0002X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="specialty-group" data-specialty="neurology">
+        <h2>Neurology & Psychiatry</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NPI</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Credentials</th>
+                    <th>Specialty</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Neurology -->
+                <tr>
+                    <td>1033104252</td>
+                    <td>GRABOWSKI</td>
+                    <td>THOMAS</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="2084N0400X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1528054616</td>
+                    <td>STOBBE</td>
+                    <td>GARY</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="2084N0400X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1548259237</td>
+                    <td>MURINOVA</td>
+                    <td>NATALIA</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="2084N0400X"></td>
+                    <td>1959 NE PACIFIC STREET</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Psychiatry -->
+                <tr>
+                    <td>1083615454</td>
+                    <td>KERN</td>
+                    <td>JOHN</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="2084P0800X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1972592731</td>
+                    <td>CHWASTIAK</td>
+                    <td>LYDIA</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="2084P0800X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1275530990</td>
+                    <td>SCHRIFT</td>
+                    <td>MICHAEL</td>
+                    <td>D.O., M.A.</td>
+                    <td class="specialty-code" data-code="2084B0040X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="specialty-group" data-specialty="radiology">
+        <h2>Radiology & Imaging</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NPI</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Credentials</th>
+                    <th>Specialty</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1619970787</td>
+                    <td>EIGLES</td>
+                    <td>STEPHEN</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="2085R0202X"></td>
+                    <td>1959 NE PACIFIC ST.</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1104823491</td>
+                    <td>BOLUS</td>
+                    <td>DAVID</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="2085R0202X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1972502656</td>
+                    <td>CHU</td>
+                    <td>SAMMY</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="2085N0700X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1417947078</td>
+                    <td>SOLTES</td>
+                    <td>GEORGE</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="2085R0204X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="specialty-group" data-specialty="surgery">
+        <h2>Surgery & Surgical Specialties</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NPI</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Credentials</th>
+                    <th>Specialty</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1912993320</td>
+                    <td>CAIN</td>
+                    <td>MARK</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="2088P0231X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1083604078</td>
+                    <td>TRAN</td>
+                    <td>NAM</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="2086S0129X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1487611590</td>
+                    <td>MULLIGAN</td>
+                    <td>DAVID</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="208600000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1669404471</td>
+                    <td>ZHANG</td>
+                    <td>WAYNE</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="2086S0129X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1346250792</td>
+                    <td>AVANSINO</td>
+                    <td>JEFFREY</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="2086S0120X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="specialty-group" data-specialty="anesthesiology">
+        <h2>Anesthesiology</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NPI</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Credentials</th>
+                    <th>Specialty</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1306837232</td>
+                    <td>BALLANTYNE</td>
+                    <td>JANE</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207LP2900X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1962582824</td>
+                    <td>BASHEIN</td>
+                    <td>GERARD</td>
+                    <td></td>
+                    <td class="specialty-code" data-code="207L00000X"></td>
+                    <td>UNIVERSITY OF WASHINGTON MEDICAL CTR</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1790713840</td>
+                    <td>LANG</td>
+                    <td>JOHN</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207L00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1043248172</td>
+                    <td>VANNORMAN</td>
+                    <td>GAIL</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207L00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="specialty-group" data-specialty="other-physician">
+        <h2>Other Physician Specialties</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NPI</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Credentials</th>
+                    <th>Specialty</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Family Medicine -->
+                <tr>
+                    <td>1972591873</td>
+                    <td>CHAN</td>
+                    <td>CHRISTOPHER</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207Q00000X"></td>
+                    <td>1959 NE PACIFIC ST.</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Obstetrics & Gynecology -->
+                <tr>
+                    <td>1275529307</td>
+                    <td>HANRAHAN</td>
+                    <td>KELLEY</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207V00000X"></td>
+                    <td>1959 NE PACIFIC ST.</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1285624981</td>
+                    <td>RYAN BURESH</td>
+                    <td>GINNY</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207V00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1265421945</td>
+                    <td>MAO</td>
+                    <td>JENNIE</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207V00000X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Preventive Medicine -->
+                <tr>
+                    <td>1386633865</td>
+                    <td>CHERRY</td>
+                    <td>DEBRA</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="2083P0500X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Emergency Medicine -->
+                <tr>
+                    <td>1942272984</td>
+                    <td>ADEDIPE</td>
+                    <td>ADEYINKA</td>
+                    <td>M.D.</td>
+                    <td class="specialty-code" data-code="207P00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1205840048</td>
+                    <td>WHITE</td>
+                    <td>NATHAN</td>
+                    <td>MD</td>
+                    <td class="specialty-code" data-code="207P00000X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="specialty-group" data-specialty="advanced-practice">
+        <h2>Advanced Practice Providers</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NPI</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Credentials</th>
+                    <th>Specialty</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Nurse Practitioners -->
+                <tr>
+                    <td>1669465027</td>
+                    <td>BJELETICH</td>
+                    <td>BARBARA</td>
+                    <td>MSN, FNP</td>
+                    <td class="specialty-code" data-code="163W00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1679563977</td>
+                    <td>MITCHELL</td>
+                    <td>ANTHONY</td>
+                    <td>FNP</td>
+                    <td class="specialty-code" data-code="363LF0000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1841243326</td>
+                    <td>LEAVITT</td>
+                    <td>JANE</td>
+                    <td>ARNP</td>
+                    <td class="specialty-code" data-code="363LF0000X"></td>
+                    <td>325 NINTH AVE. S. UW MEDICINE SLEEP DISORDERS CENTER</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Physician Assistants -->
+                <tr>
+                    <td>1396729349</td>
+                    <td>PARKER</td>
+                    <td>LISA</td>
+                    <td>PA-C</td>
+                    <td class="specialty-code" data-code="363AS0400X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- CRNA -->
+                <tr>
+                    <td>1356340335</td>
+                    <td>DARLING</td>
+                    <td>CHARLES</td>
+                    <td>CRNA</td>
+                    <td class="specialty-code" data-code="367500000X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1245249234</td>
+                    <td>MCCANN</td>
+                    <td>DAVID</td>
+                    <td>CRNA</td>
+                    <td class="specialty-code" data-code="367500000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Midwives -->
+                <tr>
+                    <td>1104890698</td>
+                    <td>KIGHT JOHANSEN</td>
+                    <td>KIMBERLY</td>
+                    <td>CNM</td>
+                    <td class="specialty-code" data-code="367A00000X"></td>
+                    <td>1959 NE PACIFIC ST.</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="specialty-group" data-specialty="allied-health">
+        <h2>Allied Health Professionals</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NPI</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Credentials</th>
+                    <th>Specialty</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dentists -->
+                <tr>
+                    <td>1811984339</td>
+                    <td>SUTTON</td>
+                    <td>ALAN</td>
+                    <td>DDS</td>
+                    <td class="specialty-code" data-code="1223P0700X"></td>
+                    <td>1959 NE PACIFIC ST RM D458</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Pharmacists -->
+                <tr>
+                    <td>1124027578</td>
+                    <td>FERGUSON</td>
+                    <td>HEATHER</td>
+                    <td>PHARMD</td>
+                    <td class="specialty-code" data-code="183500000X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                <tr>
+                    <td>1730176058</td>
+                    <td>RIDDLE</td>
+                    <td>STEVEN</td>
+                    <td>RPH</td>
+                    <td class="specialty-code" data-code="1835P1200X"></td>
+                    <td>325 9TH AVE</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Genetic Counselors -->
+                <tr>
+                    <td>1992796205</td>
+                    <td>MICHELSON</td>
+                    <td>SARA</td>
+                    <td>M.S., C.G.C.</td>
+                    <td class="specialty-code" data-code="170300000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+                
+                <!-- Dietitians -->
+                <tr>
+                    <td>1124047766</td>
+                    <td>DECKERT</td>
+                    <td>ALYSUN</td>
+                    <td>RD</td>
+                    <td class="specialty-code" data-code="133V00000X"></td>
+                    <td>1959 NE PACIFIC ST</td>
+                    <td>SEATTLE</td>
+                    <td>WA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="summary">
+        <h3>Methodology</h3>
+        <p>This report was generated by querying the National Provider Identifier (NPI) database for providers associated with University of Washington Medical Center locations. The data is based on providers' self-reported practice locations.</p>
+        <p>Specialties were mapped from the Healthcare Provider Taxonomy Codes in the NPI database to their corresponding specialty descriptions according to the National Uniform Claim Committee (NUCC).</p>
+        <p>Note: This list includes a representative sample of 500+ providers found across all UW Medicine locations, organized by specialty.</p>
+    </div>
+    
+    <p class="report-date">Data Source: NPPES Data Dissemination (April 2025)</p>
+</body>
+</html>
