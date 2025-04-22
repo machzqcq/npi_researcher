@@ -45,9 +45,9 @@ Researching on an NPI can be useful for
 
 ### Data
 - Download medicare Part D data from [here](https://download.cms.gov/nppes/NPI_Files.html) and extract the contents to `data` folder (create data folder if not already present)
-- Use the script [extract_meta](data_etl\data_dict_pdf_to_csv.py) to read pdf file that contains tables/schema definition and extract it into a csv file for e.g. extracted_tables.csv
+- Use the script [extract_meta](data_etl/data_dict_pdf_to_csv.py) to read pdf file that contains tables/schema definition and extract it into a csv file for e.g. extracted_tables.csv
 - `Optional Step for ERD` - As a human, I would like to understand the entity-relationship-diagram of the tables, to be able to validate if the AI is getting me right output, by joining the tables. Use the script `nppes_erd_generator.py` to create a graphviz diagram. Apart from python graphviz package (which is already installed above), you will need graphviz binary and you can install from [here](https://graphviz.org/)
-- Execute the section `Create DuckDB database` from the [notebook](data_etl\exploration_to_duckdb.ipynb) - This will create `medicare_data.duckdb` in the same folder
+- Execute the section `Create DuckDB database` from the [notebook](data_etl/exploration_to_duckdb.ipynb) - This will create `medicare_data.duckdb` in the same folder
 
 ### Agentic System + MCP
 - I have used github copilot ($10 per month subscription) & Claude Desktop (free one or $20 per month). You should be fine with any of the other ones like cursor | windsurf | cline etc.
