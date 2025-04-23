@@ -75,6 +75,8 @@ Researching on an NPI can be useful for
 - For [Claude Desktop](https://claude.ai/download), edit your claude_desktop_config.json accordingly using the above mcp servers
 
 ## Example Prompt
+
+```
 Prepare a reveal.js slide deck (graphs, charts, and tables) that provides detailed insights about a doctor: Jorge Sanchez-Masiques with speciality in pulmonary disease, using myDuckDB. The report should include the following sections:
 
 ### Section 1 (using DuckDB tool):
@@ -92,9 +94,10 @@ Prepare a reveal.js slide deck (graphs, charts, and tables) that provides detail
 ### Section 4 (using my filesystem tool):
 - For the keywords: `riociguat`, `PDE5 inhibitor`, and `Endothelin Receptor Antagonist`, search my private knowledge base and list all the file names as a bullet list (do not read the content).
 
----
+```
 
-### Query:
+
+### Random Query
 ```sql
 SELECT 
     Prscrbr_NPI,
@@ -107,9 +110,11 @@ WHERE Prscrbr_Type = 'Pulmonary Disease'
 GROUP BY Prscrbr_NPI, Prscrbr_Last_Org_Name, Prscrbr_First_Name
 ORDER BY SUM(Tot_Clms) DESC
 LIMIT 10;
-```
+```  
 
-### Results:
+Output 
+
+```
 - **Dr. Jorge Sanchez-Masiques (NPI: 1376541961)**  
   - Total Claims: 67,157  
   - Unique Drugs Prescribed: 58  
@@ -150,7 +155,7 @@ LIMIT 10;
   - Total Claims: 18,267  
   - Unique Drugs Prescribed: 217  
 
-
+```
 
 ### Technical
 - Install Graphviz tools from [here](https://graphviz.org/download/)
