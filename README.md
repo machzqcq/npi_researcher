@@ -3,6 +3,21 @@
 ![](image.png)  
 ![](image-1.png)  
 
+# DEMOS
+
+## Claude Desktop
+
+[DEMO](https://drive.google.com/file/d/1UnmqJHi9heMDVOxQN0bkvOVJOjvcgPUd/view?usp=sharing)
+
+## VS Code
+
+[DEMO](https://drive.google.com/file/d/1DkJXvPk9KC3iSRT_Z6vpDtvmx8cbq-dh/view?usp=sharing)
+
+## Final Report
+
+[DEMO](https://drive.google.com/file/d/1O5J5WxRJBN8-b60luZa98zB2dCC9o_k4/view?usp=sharing)
+
+
 ## Opportunities for AI agent(s)
 **Human communicates in Natural Language only**  
 
